@@ -1,0 +1,37 @@
+server:
+  port: 8080
+  context-path: /C_Bike
+spring:
+  jpa:
+    database: ORACLE
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.102.0.240:1521:maintain
+    password: hoswx
+    username: hoswx
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    pool:
+      max-active: 8
+      max-wait: 1
+      max-idle: 8
+      min-idle: 0
+    timeout: 5000
+  mvc:
+    view:
+      suffix: .jsp
+      prefix: /pages/
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.qdu.beans
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+pagehelper:
+  helper-dialect: oracle
+http:
+  encoding:
+    charset:  utf-8
+    enabled:  true
+

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qdu.mapper.CRoleModuleMapper" >
+  <resultMap id="BaseResultMap" type="com.qdu.beans.CRoleModule" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="ROLEID" property="roleid" jdbcType="DECIMAL" />
+    <result column="MODULEID" property="moduleid" jdbcType="DECIMAL" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, ROLEID, MODULEID
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from C_ROLE_MODULE
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from C_ROLE_MODULE
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <insert id="insert" parameterType="com.qdu.beans.CRoleModule" >
+    insert into C_ROLE_MODULE (ID, ROLEID, MODULEID
+      )
+    values (#{id,jdbcType=DECIMAL}, #{roleid,jdbcType=DECIMAL}, #{moduleid,jdbcType=DECIMAL}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.qdu.beans.CRoleModule" >
+    insert into C_ROLE_MODULE
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="roleid != null" >
+        ROLEID,
+      </if>
+      <if test="moduleid != null" >
+        MODULEID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=DECIMAL},
+      </if>
+      <if test="roleid != null" >
+        #{roleid,jdbcType=DECIMAL},
+      </if>
+      <if test="moduleid != null" >
+        #{moduleid,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qdu.beans.CRoleModule" >
+    update C_ROLE_MODULE
+    <set >
+      <if test="roleid != null" >
+        ROLEID = #{roleid,jdbcType=DECIMAL},
+      </if>
+      <if test="moduleid != null" >
+        MODULEID = #{moduleid,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qdu.beans.CRoleModule" >
+    update C_ROLE_MODULE
+    set ROLEID = #{roleid,jdbcType=DECIMAL},
+      MODULEID = #{moduleid,jdbcType=DECIMAL}
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+
+  <update id="addRolesModule" parameterType="com.qdu.beans.CRoleModule">
+    /*此merge方法为动态插入语句 如果原先关系就存在则不操作 若不存在就执行插入语句*/
+    merge into  C_ROLE_MODULE ur
+    using (
+    SELECT 1 as id ,
+    #{roleid} as roleid,
+    #{moduleid} as moduleid
+    from dual
+    ) temp
+    on (ur.roleid = temp.roleid and ur.moduleid = temp.moduleid)
+    when not matched THEN
+    insert( <include refid="Base_Column_List" />) values(null,temp.roleid,temp.moduleid)
+  </update>
+
+
+  <delete id="deleteModuleByRole" parameterType="cRoleModule">
+    delete from C_ROLE_MODULE cm
+    where cm.roleid = #{roleid} and cm.moduleid = #{moduleid}
+  </delete>
+
+  <delete id="batchDeleteModulesByRole" parameterType="cRoleModule">
+    delete from C_ROLE_MODULE cm
+    where cm.roleid=#{roleid} and cm.moduleid in (
+      SELECT moduleid from C_MODULE where modulename like
+      decode (#{moduleid},'-1','系统权限%','-2','单车权限%','-3','报表权限%','-4','其它权限%')
+    )
+
+  </delete>
+
+  <select id="getBatchCMByModuleName" parameterType="map" resultType="cRoleModule">
+          select #{roleid} as roleid ,id as moduleid from C_MODULE m WHERE
+          m.MODULENAME like decode(#{moduleName},'-2','单车权限%','-1','系统权限%','-3','报表权限%','-4','其他权限%')
+  </select>
+
+</mapper>

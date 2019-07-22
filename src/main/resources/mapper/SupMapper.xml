@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qdu.mapper.SupMapper" >
+    <select id="getCountBySname" resultType="java.lang.Integer" parameterType="java.util.Map" >
+        select count(1) from sup where sname = #{sname}
+    </select>
+    <insert id="insert" parameterType="com.qdu.beans.Sup" >
+        insert into sup (sname,address,priority
+        )
+        values (
+        #{sname}, #{address}, #{priority})
+    </insert>
+    <select id="query" parameterType="java.util.Map" resultType="com.qdu.beans.Sup">
+        select * from sup
+        <where>
+            <if test="sname != null and sname !=''">
+                and sname like '%${sname}%'
+            </if>
+            <if test="priority != -1 and priority !=''">
+                and priority = #{priority}
+            </if>
+        </where>
+        order by priority asc
+    </select>
+    <delete id="remove" parameterType="java.util.List">
+        delete from sup where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="getSupById" resultType="com.qdu.beans.Sup" parameterType="int">
+        select *
+        from sup where id = #{id}
+    </select>
+    <update id="update" parameterType="com.qdu.beans.Sup">
+
+        update
+        sup
+        set
+        address = #{address},
+        priority = #{priority}
+        where
+        id = #{id}
+
+
+    </update>
+</mapper>

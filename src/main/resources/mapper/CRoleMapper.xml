@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qdu.mapper.CRoleMapper" >
+  <resultMap id="BaseResultMap" type="com.qdu.beans.CRole" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="ROLENAME" property="rolename" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, ROLENAME
+  </sql>
+
+  <select id="queryRolesByUserId" resultType="com.qdu.beans.CRole" parameterType="com.qdu.beans.CUser">
+      select * from C_Role WHERE id IN (SELECT roleid from c_user_role where userid = #{id})
+  </select>
+  <select id="queryModulesByRoleId" resultType="com.qdu.beans.CModule" parameterType="com.qdu.beans.CRole">
+  select * from C_MODULE WHERE id IN (SELECT moduleid from c_role_module where roleid = #{id})
+  </select>
+
+
+  <select id="queryAllRoles" resultType="cRole">
+    select <include refid="Base_Column_List" /> from C_Role
+  </select>
+
+  <insert id="addRoleByName" parameterType="cRole">
+    merge into C_Role r
+    USING (
+      SELECT
+      1 as id,
+      #{rolename} as rolename
+      from dual
+    ) temp
+    on (r.rolename = temp.rolename)
+    when not matched THEN
+    insert (id,rolename)
+    values(
+    null,
+    temp.rolename
+    )
+  </insert>
+   <delete id="batchdeleteRolesById" parameterType="list">
+     DELETE from C_ROLE
+     where id in
+     <foreach collection="ids" open="(" close=")" separator="," item="id">
+             #{id}
+     </foreach>
+
+   </delete>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from C_ROLE
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from C_ROLE
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <insert id="insert" parameterType="com.qdu.beans.CRole" >
+    insert into C_ROLE (ID, ROLENAME)
+    values (#{id,jdbcType=DECIMAL}, #{rolename,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.qdu.beans.CRole" >
+    insert into C_ROLE
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="rolename != null" >
+        ROLENAME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=DECIMAL},
+      </if>
+      <if test="rolename != null" >
+        #{rolename,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qdu.beans.CRole" >
+    update C_ROLE
+    <set >
+      <if test="rolename != null" >
+        ROLENAME = #{rolename,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qdu.beans.CRole" >
+    update C_ROLE
+    set ROLENAME = #{rolename,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+</mapper>

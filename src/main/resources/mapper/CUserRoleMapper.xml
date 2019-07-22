@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qdu.mapper.CUserRoleMapper" >
+  <resultMap id="BaseResultMap" type="com.qdu.beans.CUserRole" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="USERID" property="userid" jdbcType="DECIMAL" />
+    <result column="ROLEID" property="roleid" jdbcType="DECIMAL" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, USERID, ROLEID
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from C_USER_ROLE
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from C_USER_ROLE
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <insert id="insert" parameterType="com.qdu.beans.CUserRole" >
+    insert into C_USER_ROLE (ID, USERID, ROLEID
+      )
+    values (#{id,jdbcType=DECIMAL}, #{userid,jdbcType=DECIMAL}, #{roleid,jdbcType=DECIMAL}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.qdu.beans.CUserRole" >
+    insert into C_USER_ROLE
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userid != null" >
+        USERID,
+      </if>
+      <if test="roleid != null" >
+        ROLEID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=DECIMAL},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=DECIMAL},
+      </if>
+      <if test="roleid != null" >
+        #{roleid,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qdu.beans.CUserRole" >
+    update C_USER_ROLE
+    <set >
+      <if test="userid != null" >
+        USERID = #{userid,jdbcType=DECIMAL},
+      </if>
+      <if test="roleid != null" >
+        ROLEID = #{roleid,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qdu.beans.CUserRole" >
+    update C_USER_ROLE
+    set USERID = #{userid,jdbcType=DECIMAL},
+      ROLEID = #{roleid,jdbcType=DECIMAL}
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+
+  <update id="addUsersRole" parameterType="com.qdu.beans.CUserRole">
+    /*此merge方法为动态插入语句 如果原先关系就存在则不操作 若不存在就执行插入语句*/
+    merge into  C_USER_ROLE ur
+    using (
+      SELECT 1 as id ,
+      #{userid} as userid,
+      #{roleid} as roleid
+      from dual
+    ) temp
+    on (ur.userid = temp.userid and ur.roleid = temp.roleid)
+    when not matched THEN
+    insert( <include refid="Base_Column_List" />) values(null,temp.userid,temp.roleid)
+  </update>
+  <delete id="deleteUsersRoleByUserid"  parameterType="com.qdu.beans.CUserRole">
+      DELETE from C_USER_ROLE ur
+      WHERE
+        ur.userid = #{userid} and ur.roleid = #{roleid}
+  </delete>
+  <delete id="deleteUsersAllRoleByUserid"  parameterType="com.qdu.beans.CUserRole">
+    DELETE from C_USER_ROLE ur
+    WHERE
+    ur.userid = #{userid}
+  </delete>
+
+</mapper>

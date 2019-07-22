@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.etoak.mapper.BicyMapper">
+	<sql id="bicy-columns">
+		id,bno,bxinghao,btype,bnumber,fid,status
+	</sql>
+
+	<insert id="add" parameterType="bicy">
+		insert INTO
+		bicy(<include refid="bicy-columns" ></include>)
+		VALUES (#{id},#{bno},#{bxinghao},#{btype},#{bnumber},#{fid},#{status})
+
+	</insert>
+
+	<select id="query" resultType="bicy" parameterType="bicy">
+
+			select <include refid="bicy-columns" ></include>
+			from bicy
+			<where>
+				<if test="bxinghao !=null and bxinghao!=''">
+					bxinghao like '${bxinghao}%'
+				</if>
+
+
+			</where>
+
+		</select>
+	<select id="getAllXinghao" resultType="bicy" >
+		SELECT *
+		from bicy
+		WHERE bnumber <![CDATA[ > 0]]>
+	</select>
+	<select id="getBicy"  resultType="bicy" parameterType="bicy">
+
+		select *
+		from bicy
+		where bxinghao =#{bxinghao} and fid=#{fid}
+	</select>
+    <select id="gettype"  resultType="bicy" parameterType="String">
+
+        select *
+        from bicy
+        where bno =#{bno}
+    </select>
+
+
+
+        <update id="update" parameterType="bicy">
+            UPDATE bicy
+                set bno=#{bno},bxinghao=#{bxinghao},fid=#{fid}
+                <if test="btype!=null">
+                    ,btype=#{btype}
+                </if>
+                where id=#{id}
+        </update>
+
+
+        <delete id="remove" parameterType="list">
+            delete from bicy
+            WHERE  id IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+
+        </delete>
+        <update id="subCount" parameterType="String">
+            UPDATE bicy set bnumber = bnumber -1
+            where bno = #{bno}
+        </update>
+        <update id="addCount" parameterType="String">
+            UPDATE bicy set bnumber = bnumber + 1
+            where bno = #{bno}
+        </update>
+</mapper>

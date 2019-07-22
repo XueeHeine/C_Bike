@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qdu.mapper.RentMapper" >
+ <select id="getMaxId" resultType="int">
+  select max(id) from rentt
+ </select>
+ <insert id="insert" parameterType="com.qdu.beans.Rentt" >
+  insert into rentt ( rno, gno,
+  getname, phone, gtime)
+  values ( #{rno,jdbcType=VARCHAR}, #{gno,jdbcType=VARCHAR},
+  #{getname,jdbcType=VARCHAR}, #{phone,jdbcType=DOUBLE}, #{gtime,jdbcType=TIMESTAMP})
+ </insert>
+ <select id="query" resultType="com.qdu.beans.Rentt">
+  select * from rentt order by gtime
+ </select>
+ <update id="update" parameterType="com.qdu.beans.Rentt">
+  update rentt set rtime = #{rtime},profit=#{profit} where id = #{id}
+ </update>
+ <select id="gtime" parameterType="java.util.Map" resultType="java.util.Date">
+  select DISTINCT to_date(to_char(gtime,'YYYY-MM-DD'),'YYYY-MM-DD') as gtime from rentt
+  <where>
+
+    <if test="ftime != null">
+     and #{ftime}+0 <![CDATA[<=]]> gtime
+    </if>
+    <if test="ltime != null">
+     and gtime <![CDATA[<=]]> to_date(to_char(#{ltime}+0,'YYYY-MM-DD')||' 23:59:59','YYYY-MM-DD HH24:MI:SS')
+    </if>
+
+  </where>
+ </select>
+ <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+  select count(*) from rentt t left join bicycle b on t.gno = b.gno where
+  to_date(to_char(t.gtime,'YYYY-MM-DD'),'YYYY-MM-DD')=#{gtime} and b.category = #{category}
+ </select>
+ <select id="getById" parameterType="java.lang.Integer" resultType="com.qdu.beans.Rentt">
+  select * from rentt where id=#{id}
+ </select>
+ <select id="getProfit" parameterType="com.qdu.beans.Bicycle" resultType="java.util.Map">
+  select sum(profit) as PROFIT,count(1) as COUNTT from rentt  where gno = #{gno}
+ </select>
+ <select id="getListByIdTime" parameterType="java.util.Map" resultType="java.util.Map">
+  with TEMP_COUNT as
+  (select to_date(#{time}||'-12-31','YYYY-MM-DD')-to_date(#{time}||'-01-01','YYYY-MM-DD') AS DAY_NUM from DUAL),
+  TEMP_DAY AS
+  (select to_date(#{time}||'-01','YYYY-MM')+(LEVEL-1) AS DATA_DATE
+  from DUAL CONNECT BY LEVEL <![CDATA[<=]]> (select DAY_NUM from TEMP_COUNT)),
+  TEMP_DATE_DAY AS(
+  select to_char(DATA_DATE,'YYYY-MM') as DATE_MONTH from TEMP_DAY
+  GROUP BY to_char(DATA_DATE,'YYYY-MM')
+  ),
+  DATA1 as (
+  select * from rentt where gno = #{gno} and to_char(gtime,'YYYY') = #{time}
+  )
+  select tdd.DATE_MONTH as DATE_DATA,count(d1.gtime) as COUNT1   from TEMP_DATE_DAY tdd left join DATA1 d1  on to_date(tdd.DATE_MONTH,'YYYY-MM') = to_date(to_char(d1.gtime,'YYYY-MM'),'YYYY-MM') GROUP BY tdd.DATE_MONTH ORDER BY tdd.DATE_MONTH asc
+ </select>
+ <select id="getDayListByIdTime" parameterType="java.util.Map" resultType="java.util.Map">
+  with TEMP_COUNT as
+  (select to_date(#{time}||'-01','YYYY-MM-DD') + LEVEL - 1 AS DATA_DATE from DUAL
+  CONNECT BY LEVEL <![CDATA[<=]]> LAST_DAY(to_date(#{time}||'-01','YYYY-MM-DD'))-to_date(#{time}||'-01','YYYY-MM-DD') + 1),
+
+  TEMP_DATE_DAY AS(
+  select to_char(DATA_DATE,'YYYY-MM-DD') as DATE_MONTH from TEMP_COUNT
+  GROUP BY to_char(DATA_DATE,'YYYY-MM-DD')
+  ),
+  DATA1 as (
+  select * from rentt where gno = #{gno} and to_char(gtime,'YYYY-MM') = #{time}
+  )
+  select tdd.DATE_MONTH as DATE_DATA,count(d1.gtime) as COUNT1   from TEMP_DATE_DAY tdd left join DATA1 d1  on to_date(tdd.DATE_MONTH,'YYYY-MM-DD') = to_date(to_char(d1.gtime,'YYYY-MM-DD'),'YYYY-MM-DD') GROUP BY tdd.DATE_MONTH ORDER BY tdd.DATE_MONTH asc
+ </select>
+
+ <!-- <resultMap id="BaseResultMap" type="com.etoak.bean.Rent" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="rno" property="rno" jdbcType="VARCHAR" />
+    <result column="gno" property="gno" jdbcType="VARCHAR" />
+    <result column="getname" property="getname" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="DOUBLE" />
+    <result column="gtime" property="gtime" jdbcType="TIMESTAMP" />
+    <result column="rtime" property="rtime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, rno, gno, getname, phone, gtime, rtime
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from rent
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from rent
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.etoak.bean.Rent" >
+    insert into rent ( rno, gno, 
+      getname, phone, gtime, 
+      rtime)
+    values ( #{rno,jdbcType=VARCHAR}, #{gno,jdbcType=VARCHAR}, 
+      #{getname,jdbcType=VARCHAR}, #{phone,jdbcType=DOUBLE}, #{gtime,jdbcType=TIMESTAMP}, 
+      #{rtime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.etoak.bean.Rent" >
+    insert into rent
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="rno != null" >
+        rno,
+      </if>
+      <if test="gno != null" >
+        gno,
+      </if>
+      <if test="getname != null" >
+        getname,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="gtime != null" >
+        gtime,
+      </if>
+      <if test="rtime != null" >
+        rtime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="rno != null" >
+        #{rno,jdbcType=VARCHAR},
+      </if>
+      <if test="gno != null" >
+        #{gno,jdbcType=VARCHAR},
+      </if>
+      <if test="getname != null" >
+        #{getname,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=DOUBLE},
+      </if>
+      <if test="gtime != null" >
+        #{gtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="rtime != null" >
+        #{rtime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.etoak.bean.Rent" >
+    update rent
+    <set >
+      <if test="rno != null" >
+        rno = #{rno,jdbcType=VARCHAR},
+      </if>
+      <if test="gno != null" >
+        gno = #{gno,jdbcType=VARCHAR},
+      </if>
+      <if test="getname != null" >
+        getname = #{getname,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=DOUBLE},
+      </if>
+      <if test="gtime != null" >
+        gtime = #{gtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="rtime != null" >
+        rtime = #{rtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.etoak.bean.Rent" >
+    update rent
+    set rno = #{rno,jdbcType=VARCHAR},
+      gno = #{gno,jdbcType=VARCHAR},
+      getname = #{getname,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=DOUBLE},
+      gtime = #{gtime,jdbcType=TIMESTAMP},
+      rtime = #{rtime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="getMaxId" resultType="int">
+  	select max(id) from rent
+  </select>
+  <select id="query" resultType="rent">
+  	select * from rent
+  </select>
+  <select id="getById" parameterType="int" resultType="rent">
+  	select * from rent where id=#{id}
+  </select>
+  <update id="update" parameterType="rent">
+  	update rent set rtime = #{rtime} where id = #{id}
+  </update>
+  <select id="count" parameterType="map" resultType="int">
+  	select count(*) from rent t left join bicycle b on t.gno = b.gno where 
+  	t.gtime=#{gtime} and b.category = #{category}
+  </select>
+  <select id="gtime" resultType="java.util.Date">
+  	select DISTINCT gtime from rent
+  </select>-->
+</mapper>
